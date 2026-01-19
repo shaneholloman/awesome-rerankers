@@ -1,11 +1,14 @@
 # Awesome Rerankers [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-> A curated list of reranking models, libraries, and resources for building high-quality Retrieval-Augmented Generation (RAG) applications.
+> A curated list of reranking models, libraries, and resources for RAG applications.
 
-Rerankers are specialized models that refine initial search results by re-scoring and reordering documents based on their semantic relevance to a query. They serve as a crucial second-stage filter in RAG pipelines, significantly improving retrieval quality and reducing LLM hallucinations.
+📊 **[View Live Leaderboard](https://agentset.ai/rerankers)** - Compare rerankers on production benchmarks
+
+Rerankers take a query and retrieved documents and reorder them by relevance. They use cross-encoders to jointly encode query-document pairs, which is slower than vector search but more accurate. Typical pipeline: retrieve 50-100 candidates with vector search, rerank to top 3-5.
 
 ## Contents
 
+- [Quick Picks](#quick-picks)
 - [What are Rerankers?](#what-are-rerankers)
 - [Open Source Models](#open-source-models)
   - [Cross-Encoder Models](#cross-encoder-models)
@@ -24,32 +27,69 @@ Rerankers are specialized models that refine initial search results by re-scorin
 - [Tools & Utilities](#tools--utilities)
 - [Related Awesome Lists](#related-awesome-lists)
 
+## Quick Picks
+
+**Starting out?** → [Cohere Rerank](https://docs.cohere.com/docs/reranking) (free tier, 100+ languages)
+
+**Self-hosting?** → [BGE-Reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) (multilingual, runs on CPU)
+
+**Best accuracy?** → [Voyage Rerank 2.5](https://docs.voyageai.com/docs/reranker) (top benchmarks, English-focused)
+
+**Lightweight?** → [FlashRank](https://github.com/PrithivirajDamodaran/FlashRank) (~4MB, CPU-only, no torch)
+
+**Production ready?** → Check the [leaderboard](https://agentset.ai/rerankers) for latest benchmarks
+
 ## What are Rerankers?
 
-Rerankers are models that take a query and a set of retrieved documents as input and output relevance scores for reordering. They differ from traditional retrieval in several key ways:
+Rerankers refine search results by re-scoring query-document pairs. Key differences from vector search:
 
-- **Two-Stage Architecture** - Initial retrieval casts a wide net (e.g., 100-1000 candidates), then reranking refines to top-k most relevant
-- **Cross-Attention** - Unlike bi-encoders that encode query and document separately, rerankers jointly encode both for better semantic understanding
-- **Quality vs Speed Tradeoff** - More computationally expensive than vector search but significantly more accurate
-- **Types** - Pointwise (score each doc independently), pairwise (compare doc pairs), and listwise (score entire list)
+**Vector search (bi-encoders):**
+- Encodes query and documents separately
+- Fast (pre-computed embeddings)
+- Returns 50-100 candidates
+
+**Reranking (cross-encoders):**
+- Jointly encodes query + document
+- Slower but more accurate
+- Refines to top 3-5 results
+
+**Types:** Pointwise (score each doc independently), pairwise (compare pairs), listwise (score entire list)
+
+## Top Models Comparison
+
+| Model | Type | Multilingual | Deployment | Best For |
+|-------|------|--------------|------------|----------|
+| [Cohere Rerank](https://docs.cohere.com/docs/reranking) | API | 100+ languages | Cloud | Production, easy start |
+| [Voyage Rerank 2.5](https://docs.voyageai.com/docs/reranker) | API | English-focused | Cloud | Highest accuracy |
+| [Jina Reranker v2](https://jina.ai/reranker/) | API/OSS | 100+ languages | Cloud/Self-host | Balance cost/quality |
+| [BGE-Reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) | Open Source | 100+ languages | Self-host | Free, multilingual |
+| [mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) | Open Source | English | Self-host | Best OSS accuracy |
+| [FlashRank](https://github.com/PrithivirajDamodaran/FlashRank) | Open Source | Limited | Self-host | Lightweight, CPU-only |
+
+**→ Full benchmarks:** [agentset.ai/rerankers](https://agentset.ai/rerankers)
 
 ## Open Source Models
 
 ### Cross-Encoder Models
 
-Cross-encoders jointly encode query and document pairs, providing highly accurate relevance scores.
+Cross-encoders jointly encode query and document pairs for accurate relevance scoring.
 
-- **[BGE-Reranker](https://github.com/FlagOpen/FlagEmbedding)** - BAAI's state-of-the-art reranking models trained on massive datasets. Available in base, large, and v2-m3 variants with multilingual support.
-- **[bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)** - Lightweight model (278M parameters) optimized for speed and efficiency.
-- **[bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large)** - High-performance model (560M parameters) for maximum accuracy.
-- **[bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3)** - Multilingual model supporting 100+ languages with 568M parameters.
-- **[bge-reranker-v2-gemma](https://huggingface.co/BAAI/bge-reranker-v2-gemma)** - Based on Google's Gemma architecture for improved performance.
-- **[Jina Reranker v2](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual)** - Multilingual reranker with 1024 token context length and sliding window support.
-- **[jina-reranker-v2-base-multilingual](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual)** - Supports 100+ languages with function-calling and code search capabilities.
-- **[mixedbread-ai/mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2)** - Qwen-2.5-based model with 0.5B parameters, outperforming competitors on BEIR.
-- **[mixedbread-ai/mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2)** - 1.5B parameter model achieving top BEIR benchmark scores.
-- **[ms-marco-MiniLM-L-12-v2](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-12-v2)** - Microsoft's efficient cross-encoder trained on MS MARCO dataset.
-- **[ms-marco-TinyBERT-L-6](https://huggingface.co/cross-encoder/ms-marco-TinyBERT-L-6)** - Ultra-lightweight variant for resource-constrained environments.
+**BGE-Reranker** ([GitHub](https://github.com/FlagOpen/FlagEmbedding))
+- [bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base) - 278M params, fast
+- [bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large) - 560M params, high accuracy
+- [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) - 568M params, multilingual (100+ languages)
+- [bge-reranker-v2-gemma](https://huggingface.co/BAAI/bge-reranker-v2-gemma) - Gemma architecture
+
+**Jina Reranker v2** ([HuggingFace](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual))
+- 1024 token context, 100+ languages, code search support
+
+**Mixedbread AI**
+- [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) - 0.5B params (Qwen-2.5)
+- [mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) - 1.5B params, top BEIR scores
+
+**MS MARCO Models**
+- [ms-marco-MiniLM-L-12-v2](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-12-v2) - Efficient
+- [ms-marco-TinyBERT-L-6](https://huggingface.co/cross-encoder/ms-marco-TinyBERT-L-6) - Ultra-lightweight
 
 ### T5-Based Models
 
