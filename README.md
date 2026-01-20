@@ -1,12 +1,14 @@
 # Awesome Rerankers [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-> A curated list of reranking models, libraries, and resources for building high-quality Retrieval-Augmented Generation (RAG) applications.
+> A curated list of reranking models, libraries, and resources for RAG applications.
 
-Rerankers are specialized models that refine initial search results by re-scoring and reordering documents based on their semantic relevance to a query. They serve as a crucial second-stage filter in RAG pipelines, significantly improving retrieval quality and reducing LLM hallucinations.
+Rerankers take a query and retrieved documents and reorder them by relevance. They use cross-encoders to jointly encode query-document pairs, which is slower than vector search but more accurate. Typical pipeline: retrieve 50-100 candidates with vector search, rerank to top 3-5.
 
 ## Contents
 
 - [What are Rerankers?](#what-are-rerankers)
+- [Top Models Comparison](#top-models-comparison)
+- [Quick Start](#quick-start)
 - [Open Source Models](#open-source-models)
   - [Cross-Encoder Models](#cross-encoder-models)
   - [T5-Based Models](#t5-based-models)
@@ -22,34 +24,86 @@ Rerankers are specialized models that refine initial search results by re-scorin
 - [Research Papers](#research-papers)
 - [Tutorials & Resources](#tutorials--resources)
 - [Tools & Utilities](#tools--utilities)
+- [Reranker Leaderboard](#reranker-leaderboard)
 - [Related Awesome Lists](#related-awesome-lists)
 
 ## What are Rerankers?
 
-Rerankers are models that take a query and a set of retrieved documents as input and output relevance scores for reordering. They differ from traditional retrieval in several key ways:
+Rerankers refine search results by re-scoring query-document pairs. Key differences from vector search:
 
-- **Two-Stage Architecture** - Initial retrieval casts a wide net (e.g., 100-1000 candidates), then reranking refines to top-k most relevant
-- **Cross-Attention** - Unlike bi-encoders that encode query and document separately, rerankers jointly encode both for better semantic understanding
-- **Quality vs Speed Tradeoff** - More computationally expensive than vector search but significantly more accurate
-- **Types** - Pointwise (score each doc independently), pairwise (compare doc pairs), and listwise (score entire list)
+**Vector search (bi-encoders):**
+- Encodes query and documents separately
+- Fast (pre-computed embeddings)
+- Returns 50-100 candidates
+
+**Reranking (cross-encoders):**
+- Jointly encodes query + document
+- Slower but more accurate
+- Refines to top 3-5 results
+
+**Types:** Pointwise (score each doc independently), pairwise (compare pairs), listwise (score entire list)
+
+## Top Models Comparison
+
+| Model | Type | Multilingual | Deployment | Best For |
+|-------|------|--------------|------------|----------|
+| [Cohere Rerank](https://docs.cohere.com/docs/reranking) | API | 100+ languages | Cloud | Production, easy start |
+| [Voyage Rerank 2.5](https://docs.voyageai.com/docs/reranker) | API | English-focused | Cloud | Highest accuracy |
+| [Jina Reranker v2](https://jina.ai/reranker/) | API/OSS | 100+ languages | Cloud/Self-host | Balance cost/quality |
+| [BGE-Reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) | Open Source | 100+ languages | Self-host | Free, multilingual |
+| [mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) | Open Source | English | Self-host | Best OSS accuracy |
+| [FlashRank](https://github.com/PrithivirajDamodaran/FlashRank) | Open Source | Limited | Self-host | Lightweight, CPU-only |
+
+**→ [View Full Benchmarks & Leaderboard](https://agentset.ai/rerankers)** - Live comparison of rerankers on production benchmarks including NDCG@10, latency, and cost metrics. Updated regularly with new models and real-world performance data.
+
+## Quick Start
+
+**5-Minute Setup:**
+
+```python
+# Option 1: Cohere API (easiest)
+from cohere import Client
+client = Client("your-api-key")
+results = client.rerank(
+    query="What is deep learning?",
+    documents=["Doc 1...", "Doc 2..."],
+    model="rerank-v3.5",
+    top_n=3
+)
+
+# Option 2: Self-hosted (free)
+from sentence_transformers import CrossEncoder
+model = CrossEncoder('BAAI/bge-reranker-v2-m3')
+scores = model.predict([
+    ["What is deep learning?", "Doc 1..."],
+    ["What is deep learning?", "Doc 2..."]
+])
+```
+
+**Choosing a Reranker:** For help selecting the best reranker for your use case, check out [Best Reranker for RAG: We tested the top models](https://agentset.ai/blog/best-reranker) where we break down consistency, accuracy, and performance across top models.
 
 ## Open Source Models
 
 ### Cross-Encoder Models
 
-Cross-encoders jointly encode query and document pairs, providing highly accurate relevance scores.
+Cross-encoders jointly encode query and document pairs for accurate relevance scoring.
 
-- **[BGE-Reranker](https://github.com/FlagOpen/FlagEmbedding)** - BAAI's state-of-the-art reranking models trained on massive datasets. Available in base, large, and v2-m3 variants with multilingual support.
-- **[bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)** - Lightweight model (278M parameters) optimized for speed and efficiency.
-- **[bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large)** - High-performance model (560M parameters) for maximum accuracy.
-- **[bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3)** - Multilingual model supporting 100+ languages with 568M parameters.
-- **[bge-reranker-v2-gemma](https://huggingface.co/BAAI/bge-reranker-v2-gemma)** - Based on Google's Gemma architecture for improved performance.
-- **[Jina Reranker v2](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual)** - Multilingual reranker with 1024 token context length and sliding window support.
-- **[jina-reranker-v2-base-multilingual](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual)** - Supports 100+ languages with function-calling and code search capabilities.
-- **[mixedbread-ai/mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2)** - Qwen-2.5-based model with 0.5B parameters, outperforming competitors on BEIR.
-- **[mixedbread-ai/mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2)** - 1.5B parameter model achieving top BEIR benchmark scores.
-- **[ms-marco-MiniLM-L-12-v2](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-12-v2)** - Microsoft's efficient cross-encoder trained on MS MARCO dataset.
-- **[ms-marco-TinyBERT-L-6](https://huggingface.co/cross-encoder/ms-marco-TinyBERT-L-6)** - Ultra-lightweight variant for resource-constrained environments.
+**BGE-Reranker** ([GitHub](https://github.com/FlagOpen/FlagEmbedding))
+- [bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base) - 278M params, fast
+- [bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large) - 560M params, high accuracy
+- [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) - 568M params, multilingual (100+ languages)
+- [bge-reranker-v2-gemma](https://huggingface.co/BAAI/bge-reranker-v2-gemma) - Gemma architecture
+
+**Jina Reranker v2** ([HuggingFace](https://huggingface.co/jinaai/jina-reranker-v2-base-multilingual))
+- 1024 token context, 100+ languages, code search support
+
+**Mixedbread AI**
+- [mxbai-rerank-base-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-base-v2) - 0.5B params (Qwen-2.5)
+- [mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) - 1.5B params, top BEIR scores
+
+**MS MARCO Models**
+- [ms-marco-MiniLM-L-12-v2](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-12-v2) - Efficient
+- [ms-marco-TinyBERT-L-6](https://huggingface.co/cross-encoder/ms-marco-TinyBERT-L-6) - Ultra-lightweight
 
 ### T5-Based Models
 
@@ -163,18 +217,42 @@ Key metrics for assessing reranker performance:
 ### Foundational Papers
 
 - **[Document Ranking with a Pretrained Sequence-to-Sequence Model](https://arxiv.org/abs/2003.06713)** (2020) - Introduces MonoT5 and DuoT5 for text ranking.
-- **[RankT5: Fine-Tuning T5 for Text Ranking with Ranking Losses](https://arxiv.org/abs/2210.10634)** (2022) - Specialized ranking losses for T5 models.
-- **[Is ChatGPT Good at Search? Investigating Large Language Models as Re-Ranking Agents](https://arxiv.org/abs/2304.09542)** (2023) - Introduces RankGPT and zero-shot LLM reranking.
 - **[BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663)** (2021) - Establishes BEIR benchmark suite.
+- **[Is ChatGPT Good at Search? Investigating Large Language Models as Re-Ranking Agents](https://arxiv.org/abs/2304.09542)** (2023) - Introduces RankGPT for zero-shot LLM reranking.
+- **[RankRAG: Unifying Context Ranking with Retrieval-Augmented Generation in LLMs](https://arxiv.org/abs/2407.02485)** (2024) - Unified framework for context ranking and answer generation.
 
-### Recent Advances
+### Recent Advances (2024-2025)
 
-- **[C-Pack: Packaged Resources To Advance General Chinese Embedding](https://arxiv.org/abs/2309.07597)** (2023) - Introduces BGE reranking models.
-- **[JudgeRank: Leveraging Large Language Models for Reasoning-Intensive Reranking](https://arxiv.org/abs/2411.00142)** (2024) - LLM-based reranking with reasoning capabilities.
-- **[Rank1: Test-Time Compute for Reranking in Information Retrieval](https://arxiv.org/abs/2502.18418)** (2025) - Novel test-time optimization for reranking.
-- **[How Good are LLM-based Rerankers? An Empirical Analysis](https://arxiv.org/abs/2508.16757)** (2025) - Comprehensive comparison of LLM reranking approaches.
-- **[SciRerankBench: Benchmarking Rerankers Towards Scientific RAG-LLMs](https://arxiv.org/abs/2508.08742)** (2025) - Specialized evaluation for scientific literature.
-- **[A Systematic Review of Key Retrieval-Augmented Generation (RAG) Systems](https://arxiv.org/abs/2507.18910)** (2025) - Comprehensive RAG survey including reranking techniques.
+#### Cross-Encoder Innovations
+
+- **[A Thorough Comparison of Cross-Encoders and LLMs for Reranking SPLADE](https://arxiv.org/abs/2403.10407)** (March 2024) - Comprehensive evaluation on TREC-DL and BEIR showing traditional cross-encoders remain competitive against GPT-4 while being more efficient.
+- **[Set-Encoder: Permutation-Invariant Inter-Passage Attention for Listwise Passage Re-Ranking with Cross-Encoders](https://arxiv.org/abs/2404.06912)** (April 2024, ECIR 2025) - Novel cross-encoder architecture with inter-passage attention for efficient listwise reranking, achieving state-of-the-art results while maintaining permutation invariance.
+- **[Don't Forget to Connect! Improving RAG with Graph-based Reranking](https://arxiv.org/abs/2405.18414)** (May 2024) - Introduces G-RAG, a GNN-based reranker that leverages document connections and semantic graphs, outperforming state-of-the-art approaches with smaller computational footprint.
+- **[CROSS-JEM: Accurate and Efficient Cross-encoders for Short-text Ranking Tasks](https://arxiv.org/abs/2409.09795)** (September 2024) - Novel joint ranking approach achieving 4x lower latency than standard cross-encoders while maintaining state-of-the-art accuracy through Ranking Probability Loss.
+- **[Efficient Re-ranking with Cross-encoders via Early Exit](https://dl.acm.org/doi/10.1145/3726302.3729962)** (2024, SIGIR 2025) - Introduces early exit mechanisms for cross-encoders to improve inference efficiency without sacrificing accuracy.
+
+#### LLM-Based Reranking
+
+- **[FIRST: Faster Improved Listwise Reranking with Single Token Decoding](https://arxiv.org/abs/2406.15657)** (June 2024) - Accelerates LLM reranking inference by 50% using output logits of first generated identifier while maintaining robust performance across BEIR benchmark.
+- **[InsertRank: LLMs can reason over BM25 scores to Improve Listwise Reranking](https://arxiv.org/abs/2506.14086)** (June 2025) - Demonstrates consistent gains by injecting BM25 scores into zero-shot listwise prompts across Gemini, GPT-4, and Deepseek models.
+- **[JudgeRank: Leveraging Large Language Models for Reasoning-Intensive Reranking](https://arxiv.org/abs/2411.00142)** (October 2024) - Agentic reranker using Chain-of-Thought reasoning with query analysis, document analysis, and relevance judgment steps, excelling on BRIGHT benchmark.
+- **[Do Large Language Models Favor Recent Content? A Study on Recency Bias in LLM-Based Reranking](https://arxiv.org/abs/2509.11353)** (September 2024, SIGIR-AP 2025) - Reveals significant recency bias across GPT and LLaMA models, with fresh passages promoted by up to 95 ranks and date injection reversing 25% of preferences.
+
+#### RAG & Production Systems
+
+- **[HyperRAG: Enhancing Quality-Efficiency Tradeoffs in Retrieval-Augmented Generation with Reranker KV-Cache Reuse](https://arxiv.org/abs/2504.02921)** (April 2025) - Achieves 2-3x throughput improvement for decoder-only rerankers through KV-cache reuse while maintaining high generation quality.
+- **[DynamicRAG: Leveraging Outputs of Large Language Model as Feedback for Dynamic Reranking in Retrieval-Augmented Generation](https://arxiv.org/abs/2505.07233)** (May 2025, NeurIPS 2025) - RL-based agent that dynamically adjusts both order and number of retrieved documents, achieving state-of-the-art results across seven knowledge-intensive datasets.
+- **[SciRerankBench: Benchmarking Rerankers Towards Scientific RAG-LLMs](https://arxiv.org/abs/2508.08742)** (August 2025) - Specialized benchmark for scientific document reranking with emphasis on effectiveness-efficiency tradeoffs.
+
+#### Test-Time Compute & Advanced Techniques
+
+- **[Rank1: Test-Time Compute for Reranking in Information Retrieval](https://arxiv.org/abs/2502.18418)** (February 2025, CoLM 2025) - First reranking model leveraging test-time compute with reasoning traces, distilled from R1/o1 models with 600K+ examples, achieving state-of-the-art on reasoning tasks.
+- **[How Good are LLM-based Rerankers? An Empirical Analysis](https://arxiv.org/abs/2508.16757)** (August 2025) - Comprehensive empirical evaluation comparing state-of-the-art LLM reranking approaches across multiple benchmarks and dimensions.
+
+#### Surveys & Analysis
+
+- **[The Evolution of Reranking Models in Information Retrieval: From Heuristic Methods to Large Language Models](https://arxiv.org/abs/2512.16236)** (December 2024) - Comprehensive survey tracing reranking evolution from cross-encoders to LLM-based approaches, covering architectures and training objectives.
+- **[C-Pack: Packaged Resources To Advance General Chinese Embedding](https://arxiv.org/abs/2309.07597)** (2023) - Introduces BGE reranking model family and training methodologies.
 
 ### Survey Papers
 
@@ -229,6 +307,19 @@ Key metrics for assessing reranker performance:
 
 - **[Text Embeddings Visualization](https://projector.tensorflow.org/)** - TensorFlow's embedding projector for understanding model behavior.
 - **[Phoenix](https://github.com/Arize-ai/phoenix)** - LLM observability platform with retrieval tracing.
+
+## Reranker Leaderboard
+
+📊 **[View Live Leaderboard](https://agentset.ai/rerankers)** - Compare rerankers using ELO scoring, nDCG@10, latency, and cost
+
+Models ranked by head-to-head GPT-5 comparisons across financial, scientific, and essay datasets.
+
+**Current Leaders (as of Nov 2025):**
+- **[Zerank 2](https://agentset.ai/rerankers/zerank-2)** - Wins most head-to-head matchups, highest consistency across domains
+- **[Cohere Rerank 4 Pro](https://agentset.ai/rerankers/cohere-rerank-4-pro)** - Second best win rate, strong performance on complex queries
+- **[Voyage AI Rerank 2.5](https://agentset.ai/rerankers/voyage-ai-rerank-25)** - Balanced accuracy and response times
+
+Rankings update as new models are evaluated.
 
 ## Related Awesome Lists
 
