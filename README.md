@@ -2,14 +2,13 @@
 
 > A curated list of reranking models, libraries, and resources for RAG applications.
 
-📊 **[View Live Leaderboard](https://agentset.ai/rerankers)** - Compare rerankers on production benchmarks
-
 Rerankers take a query and retrieved documents and reorder them by relevance. They use cross-encoders to jointly encode query-document pairs, which is slower than vector search but more accurate. Typical pipeline: retrieve 50-100 candidates with vector search, rerank to top 3-5.
 
 ## Contents
 
-- [Quick Picks](#quick-picks)
 - [What are Rerankers?](#what-are-rerankers)
+- [Top Models Comparison](#top-models-comparison)
+- [Quick Start](#quick-start)
 - [Open Source Models](#open-source-models)
   - [Cross-Encoder Models](#cross-encoder-models)
   - [T5-Based Models](#t5-based-models)
@@ -25,43 +24,8 @@ Rerankers take a query and retrieved documents and reorder them by relevance. Th
 - [Research Papers](#research-papers)
 - [Tutorials & Resources](#tutorials--resources)
 - [Tools & Utilities](#tools--utilities)
+- [Reranker Leaderboard](#reranker-leaderboard)
 - [Related Awesome Lists](#related-awesome-lists)
-
-## Quick Start
-
-**5-Minute Setup:**
-
-```python
-# Option 1: Cohere API (easiest)
-from cohere import Client
-client = Client("your-api-key")
-results = client.rerank(
-    query="What is deep learning?",
-    documents=["Doc 1...", "Doc 2..."],
-    model="rerank-v3.5",
-    top_n=3
-)
-
-# Option 2: Self-hosted (free)
-from sentence_transformers import CrossEncoder
-model = CrossEncoder('BAAI/bge-reranker-v2-m3')
-scores = model.predict([
-    ["What is deep learning?", "Doc 1..."],
-    ["What is deep learning?", "Doc 2..."]
-])
-```
-
-**Choose Your Reranker:**
-
-**Starting out?** → [Cohere Rerank](https://docs.cohere.com/docs/reranking) - Free tier, 100+ languages, 5-min setup
-
-**Self-hosting?** → [BGE-Reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) - Free, multilingual, runs on CPU
-
-**Best accuracy?** → [Voyage Rerank 2.5](https://docs.voyageai.com/docs/reranker) - Top benchmarks, instruction-following
-
-**Lightweight?** → [FlashRank](https://github.com/PrithivirajDamodaran/FlashRank) - 4MB, CPU-only, no PyTorch
-
-**Production?** → See [leaderboard](https://agentset.ai/rerankers) for latest benchmarks
 
 ## What are Rerankers?
 
@@ -90,7 +54,33 @@ Rerankers refine search results by re-scoring query-document pairs. Key differen
 | [mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) | Open Source | English | Self-host | Best OSS accuracy |
 | [FlashRank](https://github.com/PrithivirajDamodaran/FlashRank) | Open Source | Limited | Self-host | Lightweight, CPU-only |
 
-**→ Full benchmarks:** [agentset.ai/rerankers](https://agentset.ai/rerankers)
+**→ [View Full Benchmarks & Leaderboard](https://agentset.ai/rerankers)** - Live comparison of rerankers on production benchmarks including NDCG@10, latency, and cost metrics. Updated regularly with new models and real-world performance data.
+
+## Quick Start
+
+**5-Minute Setup:**
+
+```python
+# Option 1: Cohere API (easiest)
+from cohere import Client
+client = Client("your-api-key")
+results = client.rerank(
+    query="What is deep learning?",
+    documents=["Doc 1...", "Doc 2..."],
+    model="rerank-v3.5",
+    top_n=3
+)
+
+# Option 2: Self-hosted (free)
+from sentence_transformers import CrossEncoder
+model = CrossEncoder('BAAI/bge-reranker-v2-m3')
+scores = model.predict([
+    ["What is deep learning?", "Doc 1..."],
+    ["What is deep learning?", "Doc 2..."]
+])
+```
+
+**Choosing a Reranker:** For help selecting the best reranker for your use case, check out [Best Reranker for RAG: We tested the top models](https://agentset.ai/blog/best-reranker) where we break down consistency, accuracy, and performance across top models.
 
 ## Open Source Models
 
@@ -226,13 +216,10 @@ Key metrics for assessing reranker performance:
 
 ### Foundational Papers
 
-- **[Document Ranking with a Pretrained Sequence-to-Sequence Model](https://arxiv.org/abs/2003.06713)** (2020) - Introduces MonoT5 and DuoT5 for text ranking with sequence-to-sequence models.
-- **[BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663)** (2021) - Establishes BEIR benchmark suite for zero-shot retrieval evaluation.
-- **[RankT5: Fine-Tuning T5 for Text Ranking with Ranking Losses](https://arxiv.org/abs/2210.10634)** (2022) - Specialized ranking losses for T5 models with improved training objectives.
-- **[Is ChatGPT Good at Search? Investigating Large Language Models as Re-Ranking Agents](https://arxiv.org/abs/2304.09542)** (2023) - Introduces RankGPT and demonstrates zero-shot LLM reranking capabilities.
-- **[BGE M3-Embedding: Multi-Lingual, Multi-Functionality, Multi-Granularity Text Embeddings Through Self-Knowledge Distillation](https://arxiv.org/abs/2402.03216)** (2024) - Unified embedding model supporting 100+ languages with dense, multi-vector, and sparse retrieval, up to 8,192 tokens.
-- **[RankRAG: Unifying Context Ranking with Retrieval-Augmented Generation in LLMs](https://arxiv.org/abs/2407.02485)** (2024) - Instruction fine-tuning framework that trains a single LLM for both context ranking and answer generation, outperforming specialized rankers.
-- **[Making Text Embedders Few-Shot Learners](https://arxiv.org/abs/2409.15700)** (2024) - Introduces bge-en-icl model leveraging in-context learning for state-of-the-art embedding generation.
+- **[Document Ranking with a Pretrained Sequence-to-Sequence Model](https://arxiv.org/abs/2003.06713)** (2020) - Introduces MonoT5 and DuoT5 for text ranking.
+- **[BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models](https://arxiv.org/abs/2104.08663)** (2021) - Establishes BEIR benchmark suite.
+- **[Is ChatGPT Good at Search? Investigating Large Language Models as Re-Ranking Agents](https://arxiv.org/abs/2304.09542)** (2023) - Introduces RankGPT for zero-shot LLM reranking.
+- **[RankRAG: Unifying Context Ranking with Retrieval-Augmented Generation in LLMs](https://arxiv.org/abs/2407.02485)** (2024) - Unified framework for context ranking and answer generation.
 
 ### Recent Advances (2024-2025)
 
@@ -320,6 +307,19 @@ Key metrics for assessing reranker performance:
 
 - **[Text Embeddings Visualization](https://projector.tensorflow.org/)** - TensorFlow's embedding projector for understanding model behavior.
 - **[Phoenix](https://github.com/Arize-ai/phoenix)** - LLM observability platform with retrieval tracing.
+
+## Reranker Leaderboard
+
+📊 **[View Live Leaderboard](https://agentset.ai/rerankers)** - Compare rerankers on production benchmarks
+
+The Reranker Leaderboard provides comprehensive, real-world performance comparisons across:
+- **Accuracy metrics**: NDCG@10, MRR, MAP scores on standard benchmarks (BEIR, TREC-DL)
+- **Latency measurements**: Response times for different document counts
+- **Cost analysis**: Pricing per 1K searches for commercial APIs
+- **Context length**: Maximum tokens supported per model
+- **Multilingual support**: Language coverage and cross-lingual capabilities
+
+Updated regularly with new models, the leaderboard helps you make data-driven decisions when selecting a reranker for your RAG pipeline.
 
 ## Related Awesome Lists
 
