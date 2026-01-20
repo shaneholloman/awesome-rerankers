@@ -310,16 +310,16 @@ Key metrics for assessing reranker performance:
 
 ## Reranker Leaderboard
 
-📊 **[View Live Leaderboard](https://agentset.ai/rerankers)** - Compare rerankers on production benchmarks
+📊 **[View Live Leaderboard](https://agentset.ai/rerankers)** - Compare rerankers using ELO scoring, nDCG@10, latency, and cost
 
-The Reranker Leaderboard provides comprehensive, real-world performance comparisons across:
-- **Accuracy metrics**: NDCG@10, MRR, MAP scores on standard benchmarks (BEIR, TREC-DL)
-- **Latency measurements**: Response times for different document counts
-- **Cost analysis**: Pricing per 1K searches for commercial APIs
-- **Context length**: Maximum tokens supported per model
-- **Multilingual support**: Language coverage and cross-lingual capabilities
+Models ranked by head-to-head GPT-5 comparisons across financial, scientific, and essay datasets.
 
-Updated regularly with new models, the leaderboard helps you make data-driven decisions when selecting a reranker for your RAG pipeline.
+**Current Leaders (as of Nov 2025):**
+- **[Zerank 2](https://agentset.ai/rerankers/zerank-2)** - Wins most head-to-head matchups, highest consistency across domains
+- **[Cohere Rerank 4 Pro](https://agentset.ai/rerankers/cohere-rerank-4-pro)** - Second best win rate, strong performance on complex queries
+- **[Voyage AI Rerank 2.5](https://agentset.ai/rerankers/voyage-ai-rerank-25)** - Balanced accuracy and response times
+
+Rankings update as new models are evaluated.
 
 ## Related Awesome Lists
 
